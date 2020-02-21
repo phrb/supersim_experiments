@@ -36,7 +36,6 @@ do
                  --ipc=host \
                  -it \
                  --name $CONTAINER \
-                 #--mount type=bind,source=$SRC_DIR,target=$TARGET_DIR \
                  --mount type=bind,source=$REPO_SRC_DIR,target=$REPO_TARGET_DIR \
                  $IMAGE
             sudo docker exec -it $CONTAINER /bin/bash

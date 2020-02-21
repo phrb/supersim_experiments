@@ -39,7 +39,7 @@ RUN cd supersim/scripts && chmod +x installpy && ./installpy clone install
 RUN git clone https://github.com/nicmcd/make-c-cpp ~/.makeccpp
 RUN cd ~/.makeccpp && make
 
-RUN cd supersim/scripts && chmod +x installcc && ./installcc clone build
+# RUN cd supersim/scripts && chmod +x installcc && ./installcc clone build
 
 # ENV http_proxy "http://web-proxy-pa.labs.hpecorp.net:8088/"
 # ENV https_proxy "http://web-proxy-pa.labs.hpecorp.net:8088/"
