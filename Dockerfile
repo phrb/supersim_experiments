@@ -39,6 +39,7 @@ RUN cd ~/.makeccpp && git checkout $(git rev-list -n 1 --before="2019-01-01 " ma
 RUN cd ~/.makeccpp && make
 
 RUN cd supersim/scripts && chmod +x installcc && ./installcc clone build
+RUN cd supersim && make -j 4
 
 # ENV http_proxy "http://web-proxy-pa.labs.hpecorp.net:8088/"
 # ENV https_proxy "http://web-proxy-pa.labs.hpecorp.net:8088/"
