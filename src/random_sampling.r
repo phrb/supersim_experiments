@@ -130,7 +130,7 @@ for(i in 1:iterations){
 
     print(current_results)
 
-    best_points <- filter(current_results, performance_metric == max(performance_metric))
+    best_points <- filter(current_results, performance_metric == min(performance_metric))
 
     best_points$id <- i
     best_points$points <- sobol_n
