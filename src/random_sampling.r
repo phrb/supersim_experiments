@@ -58,9 +58,6 @@ measure <- function(configuration) {
     application_1 <- application_1 %>%
         filter(row_number() == 1 | row_number() == n())
 
-    application_1$injection_rate <- configuration$Application_1
-
-
     cmd <- paste(supersim_dir,
                  "scripts/ssparse/bin/ssparse",
                  " -p application_2.csv -f +app=1 output.mpf.gz",
@@ -77,14 +74,14 @@ measure <- function(configuration) {
     application_2 <- application_2 %>%
         filter(row_number() == 1 | row_number() == n())
 
-    application_2$injection_rate <- configuration$Application_2
-
     system("rm output.mpf.gz application_1.csv application_2.csv")
 
     return(data.frame(Application_1 = c(application_1[2, "packet_finish"] -
                                         application_1[1, "packet_start"]),
                       Application_2 = c(application_2[2, "packet_finish"] -
                                         application_2[1, "packet_start"]),
+                      injection_rate_1 = c(configuration$Application_1),
+                      injection_rate_2 = c(configuration$Application_2),
                       duration = c(elapsed_time)))
 }
 
