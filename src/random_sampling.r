@@ -8,13 +8,13 @@ quiet <- function(x) {
   invisible(force(x))
 }
 
-iterations <- 1
+iterations <- 10
 
 search_space <- NULL
 results <- NULL
 
 sobol_dim <- 2
-starting_sobol_n <- 10
+starting_sobol_n <- 20
 
 sobol_n <- starting_sobol_n
 
@@ -58,6 +58,9 @@ measure <- function(configuration) {
     application_1 <- application_1 %>%
         filter(row_number() == 1 | row_number() == n())
 
+    application_1$injection_rate <- configuration$Application_1
+
+
     cmd <- paste(supersim_dir,
                  "scripts/ssparse/bin/ssparse",
                  " -p application_2.csv -f +app=1 output.mpf.gz",
@@ -71,9 +74,10 @@ measure <- function(configuration) {
                               "id_1", "id_2", "id_3")
 
     application_2$id <- "Application_2"
-
     application_2 <- application_2 %>%
         filter(row_number() == 1 | row_number() == n())
+
+    application_2$injection_rate <- configuration$Application_2
 
     system("rm output.mpf.gz application_1.csv application_2.csv")
 
