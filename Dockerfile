@@ -18,6 +18,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         wget                                                     \
         python3-setuptools                                       \
         curl                                                     \
+        gfortran                                                 \
+        liblapack-dev                                            \
+        libopenblas-dev                                          \
         ca-certificates                                          \
         r-base &&                                                \
         rm -rf /var/lib/apt/lists/*
