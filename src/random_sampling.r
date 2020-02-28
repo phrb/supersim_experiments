@@ -85,6 +85,18 @@ measure <- function(configuration) {
                       duration = c(elapsed_time)))
 }
 
+mean_execution_time <- function(results) {
+    return(results %>%
+           mutate(performance_metric = (Application_1 + Application_2) / 2))
+}
+
+weighted_injection_time <- function(results) {
+    execution_time_weight <- 1e-8 # Find a better weight
+    return(results %>%
+           mutate(performance_metric = (1 / (injection_rate_1 + injection_rate_2)) +
+                      (execution_time_weight * ((Application_1 + Application_2) / 2))))
+}
+
 map_intervals <- function(x, interval_from, interval_to) {
     new_x <- x - interval_from[1]
     new_x <- new_x / (interval_from[2] - interval_from[1])
@@ -122,8 +134,8 @@ for(i in 1:iterations){
     print(df_design)
 
     current_results <- bind_rows(lapply(1:nrow(df_design), function(row) { measure(df_design[row, ]) }))
-    current_results <- current_results %>%
-        mutate(performance_metric = (Application_1 + Application_2) / 2)
+    #current_results <- mean_execution_time(current_results)
+    current_results <- weighted_injection_time(current_results)
 
     print(current_results)
 
