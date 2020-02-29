@@ -109,7 +109,7 @@ map_intervals <- function(x, interval_from, interval_to) {
 for(i in 1:iterations){
     temp_sobol <- sobol(n = sobol_n,
                         dim = sobol_dim,
-                        scrambling = 3,
+                        # scrambling = 3,
                         seed = as.integer((99999 - 10000) * runif(1) + 10000),
                         init = TRUE)
 
@@ -118,7 +118,7 @@ for(i in 1:iterations){
 
     design <- sobol(n = sobol_n,
                     dim = sobol_dim,
-                    scrambling = 3,
+                    # scrambling = 3,
                     seed = as.integer((99999 - 10000) * runif(1) + 10000),
                     init = FALSE)
 
