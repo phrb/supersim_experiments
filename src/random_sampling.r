@@ -127,7 +127,7 @@ for(i in 1:iterations){
     names(df_design) <- c("Application_1",
                           "Application_2")
 
-    design <- design %>% filter(Application_1 + Application_2 < 1.0)
+    df_design <- df_design %>% filter(Application_1 + Application_2 < 1.0)
 
     print(df_design)
 
