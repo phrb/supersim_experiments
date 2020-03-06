@@ -26,63 +26,78 @@ supersim_dir <- "../../supersim/"
 measure <- function(configuration) {
     start_time <- as.integer(format(Sys.time(), "%s"))
 
-    cmd <- paste(supersim_dir,
-                 "bin/supersim",
-                 " ../settings/settings.json",
-                 " workload.message_log.file=string=./output.mpf.gz",
-                 " workload.applications[0].blast_terminal.request_injection_rate=float=",
-                 configuration$Application_1,
-                 " workload.applications[0].blast_terminal.request_injection_rate=float=",
-                 configuration$Application_2,
-                 sep = "")
+    fail_return <- function(cond) {
+        print(cond)
+        return(data.frame(Application_1 = Inf,
+                          Application_2 = Inf,
+                          injection_rate_1 = c(configuration$Application_1),
+                          injection_rate_2 = c(configuration$Application_2),
+                          duration = c(as.integer(format(Sys.time(), "%s")) - start_time)))
+    }
 
-    print(cmd)
-    quiet(system(cmd))
+    return(tryCatch({
+        cmd <- paste(supersim_dir,
+                     "bin/supersim",
+                     " ../settings/settings.json",
+                     " workload.message_log.file=string=./output.mpf.gz",
+                     " workload.applications[0].blast_terminal.request_injection_rate=float=",
+                     configuration$Application_1,
+                     " workload.applications[0].blast_terminal.request_injection_rate=float=",
+                     configuration$Application_2,
+                     sep = "")
 
-    elapsed_time <- as.integer(format(Sys.time(), "%s")) - start_time
+        print(cmd)
+        quiet(system(cmd))
 
-    cmd <- paste(supersim_dir,
-                 "scripts/ssparse/bin/ssparse",
-                 " -p application_1.csv -f +app=0 output.mpf.gz",
-                 sep = "")
+        elapsed_time <- as.integer(format(Sys.time(), "%s")) - start_time
 
-    print(cmd)
-    system(cmd)
+        cmd <- paste(supersim_dir,
+                     "scripts/ssparse/bin/ssparse",
+                     " -p application_1.csv -f +app=0 output.mpf.gz",
+                     sep = "")
 
-    application_1 <- read.csv("application_1.csv", header = FALSE)
-    names(application_1) <- c("packet_start", "packet_finish",
-                              "id_1", "id_2", "id_3")
+        print(cmd)
+        system(cmd)
 
-    application_1$id <- "Application_1"
+        application_1 <- read.csv("application_1.csv", header = FALSE)
+        names(application_1) <- c("packet_start", "packet_finish",
+                                  "id_1", "id_2", "id_3")
 
-    application_1 <- application_1 %>%
-        filter(row_number() == 1 | row_number() == n())
+        application_1$id <- "Application_1"
 
-    cmd <- paste(supersim_dir,
-                 "scripts/ssparse/bin/ssparse",
-                 " -p application_2.csv -f +app=1 output.mpf.gz",
-                 sep = "")
+        application_1 <- application_1 %>%
+            filter(row_number() == 1 | row_number() == n())
 
-    print(cmd)
-    system(cmd)
+        cmd <- paste(supersim_dir,
+                     "scripts/ssparse/bin/ssparse",
+                     " -p application_2.csv -f +app=1 output.mpf.gz",
+                     sep = "")
 
-    application_2 <- read.csv("application_2.csv", header = FALSE)
-    names(application_2) <- c("packet_start", "packet_finish",
-                              "id_1", "id_2", "id_3")
+        print(cmd)
+        system(cmd)
 
-    application_2$id <- "Application_2"
-    application_2 <- application_2 %>%
-        filter(row_number() == 1 | row_number() == n())
+        application_2 <- read.csv("application_2.csv", header = FALSE)
+        names(application_2) <- c("packet_start", "packet_finish",
+                                  "id_1", "id_2", "id_3")
 
-    system("rm output.mpf.gz application_1.csv application_2.csv")
+        application_2$id <- "Application_2"
+        application_2 <- application_2 %>%
+            filter(row_number() == 1 | row_number() == n())
 
-    return(data.frame(Application_1 = c(application_1[2, "packet_finish"] -
-                                        application_1[1, "packet_start"]),
-                      Application_2 = c(application_2[2, "packet_finish"] -
-                                        application_2[1, "packet_start"]),
-                      injection_rate_1 = c(configuration$Application_1),
-                      injection_rate_2 = c(configuration$Application_2),
-                      duration = c(elapsed_time)))
+        system("rm output.mpf.gz application_1.csv application_2.csv")
+
+        data.frame(Application_1 = c(application_1[2, "packet_finish"] -
+                                     application_1[1, "packet_start"]),
+                   Application_2 = c(application_2[2, "packet_finish"] -
+                                     application_2[1, "packet_start"]),
+                   injection_rate_1 = c(configuration$Application_1),
+                   injection_rate_2 = c(configuration$Application_2),
+                   duration = c(elapsed_time))
+    },
+    error = fail_return,
+    warning = fail_return,
+    finally = {}
+    ))
 }
 
 mean_execution_time <- function(results) {
