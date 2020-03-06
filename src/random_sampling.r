@@ -107,18 +107,18 @@ map_intervals <- function(x, interval_from, interval_to) {
 }
 
 for(i in 1:iterations){
-    temp_sobol <- sobol(n = sobol_n,
+    temp_sobol <- sobol(n = 2 * sobol_n,
                         dim = sobol_dim,
-                        # scrambling = 3,
+                        scrambling = 3,
                         seed = as.integer((99999 - 10000) * runif(1) + 10000),
                         init = TRUE)
 
     rm(temp_sobol)
     quiet(gc())
 
-    design <- sobol(n = sobol_n,
+    design <- sobol(n = 2 * sobol_n,
                     dim = sobol_dim,
-                    # scrambling = 3,
+                    scrambling = 3,
                     seed = as.integer((99999 - 10000) * runif(1) + 10000),
                     init = FALSE)
 
@@ -127,11 +127,13 @@ for(i in 1:iterations){
     names(df_design) <- c("Application_1",
                           "Application_2")
 
-    print(df_design)
-
-    df_design <- map_intervals(df_design, c(0.0, 1.0), c(0.0, 0.5))
+    design <- design %>% filter(Application_1 + Application_2 < 1.0)
 
     print(df_design)
+
+    # df_design <- map_intervals(df_design, c(0.0, 1.0), c(0.0, 0.5))
+
+    # print(df_design)
 
     current_results <- bind_rows(lapply(1:nrow(df_design), function(row) { measure(df_design[row, ]) }))
     #current_results <- mean_execution_time(current_results)
