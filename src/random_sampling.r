@@ -108,8 +108,17 @@ mean_execution_time <- function(results) {
 weighted_injection_time <- function(results) {
     execution_time_weight <- 1e-8 # Find a better weight
     return(results %>%
-           mutate(performance_metric = (1 / (injection_rate_1 + injection_rate_2)) +
-                      (execution_time_weight * ((Application_1 + Application_2) / 2))))
+           mutate(performance_metric = (
+               (
+                   2 / (injection_rate_1 + injection_rate_2)
+               ) +
+               (execution_time_weight *
+                (
+                    (Application_1 + Application_2) / 2
+                )
+               )
+           ) / 2
+           ))
 }
 
 map_intervals <- function(x, interval_from, interval_to) {
