@@ -17,7 +17,7 @@
       {
         "num_vcs": 8,
         "routing": {
-          "algorithm": "dimension_order",  // "dal",
+          "algorithm": "dal",
           "adaptivity_type": "variable",
           "max_deroutes": 1,
           "multi_deroute": false,
@@ -149,9 +149,9 @@
       {
         "type": "blast",
         "warmup_threshold": 0.90,
-        "kill_on_saturation": false,
+        "kill_on_saturation": true,
         "log_during_saturation": true,
-        "max_saturation_cycles": 5000,
+        "max_saturation_cycles": 1,
         "blast_terminal": {
           // requests
           "request_protocol_class": 0,
@@ -182,9 +182,9 @@
       {
         "type": "blast",
         "warmup_threshold": 0.90,
-        "kill_on_saturation": false,
+        "kill_on_saturation": true,
         "log_during_saturation": true,
-        "max_saturation_cycles": 5000,
+        "max_saturation_cycles": 1,
         "blast_terminal": {
           // requests
           "request_protocol_class": 0,
