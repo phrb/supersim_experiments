@@ -8,20 +8,53 @@ quiet <- function(x) {
   invisible(force(x))
 }
 
-iterations <- 10
+iterations <- 1
 
 search_space <- NULL
 results <- NULL
 
 sobol_dim <- 2
-starting_sobol_n <- 20
+starting_sobol_n <- 200
 
 sobol_n <- starting_sobol_n
 
-level_min <- 0
-level_max <- 1
-
 supersim_dir <- "../../supersim/"
+settings_file <- "../settings/settings.json"
+
+initial_seed <- 12345678
+previous_seed <- initial_seed
+
+update_seed <- function() {
+    current_seed <- as.integer((99999 - 10000) * runif(1) + 10000)
+
+    cmd <- paste("sed -i 's/\"random_seed\": ",
+                 previous_seed,
+                 "/\"random_seed\": ",
+                 current_seed,
+                 "/g' ",
+                 settings_file,
+                 sep = "")
+
+    print("Updating seed")
+    print(cmd)
+    quiet(system(cmd))
+
+    previous_seed <<- current_seed
+}
+
+restore_seed <- function() {
+    cmd <- paste("sed -i 's/\"random_seed\": ",
+                 previous_seed,
+                 "/\"random_seed\": ",
+                 initial_seed,
+                 "/g' ",
+                 settings_file,
+                 sep = "")
+
+    print("Restoring original seed")
+    print(cmd)
+    quiet(system(cmd))
+}
 
 measure <- function(configuration) {
     start_time <- as.integer(format(Sys.time(), "%s"))
@@ -35,10 +68,13 @@ measure <- function(configuration) {
                           duration = c(as.integer(format(Sys.time(), "%s")) - start_time)))
     }
 
+    update_seed()
+
     return(tryCatch({
         cmd <- paste(supersim_dir,
                      "bin/supersim",
-                     " ../settings/settings.json",
+                     " ",
+                     settings_file,
                      " workload.message_log.file=string=./output.mpf.gz",
                      " workload.applications[0].blast_terminal.request_injection_rate=float=",
                      configuration$Application_1,
@@ -66,6 +102,7 @@ measure <- function(configuration) {
         application_1$id <- "Application_1"
 
         application_1 <- application_1 %>%
+            mutate(packets = n()) %>%
             filter(row_number() == 1 | row_number() == n())
 
         cmd <- paste(supersim_dir,
@@ -82,6 +119,7 @@ measure <- function(configuration) {
 
         application_2$id <- "Application_2"
         application_2 <- application_2 %>%
+            mutate(packets = n()) %>%
             filter(row_number() == 1 | row_number() == n())
 
         system("rm output.mpf.gz application_1.csv application_2.csv")
@@ -92,6 +130,8 @@ measure <- function(configuration) {
                                      application_2[1, "packet_start"]),
                    injection_rate_1 = c(configuration$Application_1),
                    injection_rate_2 = c(configuration$Application_2),
+                   packets_1 = c(application_1[1, "packets"]),
+                   packets_2 = c(application_1[2, "packets"]),
                    duration = c(elapsed_time))
     },
     error = fail_return,
@@ -106,7 +146,7 @@ mean_execution_time <- function(results) {
 }
 
 weighted_injection_time <- function(results) {
-    execution_time_weight <- 1e-8 # Find a better weight
+    execution_time_weight <- 1e-2 # Find a better weight
     return(results %>%
            mutate(performance_metric = (
                (
@@ -114,7 +154,8 @@ weighted_injection_time <- function(results) {
                ) +
                (execution_time_weight *
                 (
-                    (Application_1 + Application_2) / 2
+                    ((Application_1 / packets_1) +
+                     (Application_2 / packets_2)) / 2
                 )
                )
            ) / 2
@@ -133,7 +174,7 @@ map_intervals <- function(x, interval_from, interval_to) {
 for(i in 1:iterations){
     temp_sobol <- sobol(n = sobol_n,
                         dim = sobol_dim,
-                        scrambling = 3,
+                        scrambling = 1,
                         seed = as.integer((99999 - 10000) * runif(1) + 10000),
                         init = TRUE)
 
@@ -142,7 +183,7 @@ for(i in 1:iterations){
 
     design <- sobol(n = sobol_n,
                     dim = sobol_dim,
-                    scrambling = 3,
+                    scrambling = 1,
                     seed = as.integer((99999 - 10000) * runif(1) + 10000),
                     init = FALSE)
 
@@ -152,11 +193,8 @@ for(i in 1:iterations){
                           "Application_2")
 
     # df_design <- df_design %>% filter(Application_1 + Application_2 < 1.0)
-
     # print(df_design)
-
     # df_design <- map_intervals(df_design, c(0.0, 1.0), c(0.0, 0.5))
-
     # print(df_design)
 
     current_results <- bind_rows(lapply(1:nrow(df_design), function(row) { measure(df_design[row, ]) }))
@@ -200,3 +238,5 @@ for(i in 1:iterations){
                     sep = ""),
               row.names = FALSE)
 }
+
+restore_seed()
