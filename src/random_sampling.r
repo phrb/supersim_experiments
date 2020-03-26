@@ -78,7 +78,7 @@ measure <- function(configuration) {
                      " workload.message_log.file=string=./output.mpf.gz",
                      " workload.applications[0].blast_terminal.request_injection_rate=float=",
                      configuration$Application_1,
-                     " workload.applications[0].blast_terminal.request_injection_rate=float=",
+                     " workload.applications[1].blast_terminal.request_injection_rate=float=",
                      configuration$Application_2,
                      sep = "")
 
