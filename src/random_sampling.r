@@ -26,6 +26,8 @@ previous_seed <- initial_seed
 
 initial_csv <- 1
 
+max_packets <- 5000
+
 update_seed <- function() {
     current_seed <- as.integer((99999 - 10000) * runif(1) + 10000)
 
@@ -111,7 +113,8 @@ measure <- function(configuration) {
 
         application_1 <- application_1 %>%
             mutate(packets = n()) %>%
-            filter(row_number() == 1 | row_number() == n())
+            filter(row_number() == 1 | row_number() == max_packets)
+            # filter(row_number() == 1 | row_number() == n())
 
         cmd <- paste(supersim_dir,
                      "scripts/ssparse/bin/ssparse",
@@ -134,7 +137,8 @@ measure <- function(configuration) {
         application_2$id <- "Application_2"
         application_2 <- application_2 %>%
             mutate(packets = n()) %>%
-            filter(row_number() == 1 | row_number() == n())
+            filter(row_number() == 1 | row_number() == max_packets)
+            # filter(row_number() == 1 | row_number() == n())
 
         initial_csv <<- initial_csv + 1
 
