@@ -24,6 +24,8 @@ settings_file <- "../settings/settings.json"
 initial_seed <- 12345678
 previous_seed <- initial_seed
 
+initial_csv <- 1
+
 update_seed <- function() {
     current_seed <- as.integer((99999 - 10000) * runif(1) + 10000)
 
@@ -89,13 +91,19 @@ measure <- function(configuration) {
 
         cmd <- paste(supersim_dir,
                      "scripts/ssparse/bin/ssparse",
-                     " -p application_1.csv -f +app=0 output.mpf.gz",
+                     " -p application_1_",
+                     initial_csv,
+                     ".csv -f +app=0 output.mpf.gz",
                      sep = "")
 
         print(cmd)
         system(cmd)
 
-        application_1 <- read.csv("application_1.csv", header = FALSE)
+        application_1 <- read.csv(paste("application_1_",
+                                        initial_csv,
+                                        ".csv",
+                                        sep = ""),
+                                  header = FALSE)
         names(application_1) <- c("packet_start", "packet_finish",
                                   "id_1", "id_2", "id_3")
 
@@ -107,13 +115,19 @@ measure <- function(configuration) {
 
         cmd <- paste(supersim_dir,
                      "scripts/ssparse/bin/ssparse",
-                     " -p application_2.csv -f +app=1 output.mpf.gz",
+                     " -p application_2_",
+                     initial_csv,
+                     ".csv -f +app=1 output.mpf.gz",
                      sep = "")
 
         print(cmd)
         system(cmd)
 
-        application_2 <- read.csv("application_2.csv", header = FALSE)
+        application_2 <- read.csv(paste("application_2_",
+                                        initial_csv,
+                                        ".csv",
+                                        sep = ""),
+                                  header = FALSE)
         names(application_2) <- c("packet_start", "packet_finish",
                                   "id_1", "id_2", "id_3")
 
@@ -122,7 +136,11 @@ measure <- function(configuration) {
             mutate(packets = n()) %>%
             filter(row_number() == 1 | row_number() == n())
 
-        system("rm output.mpf.gz application_1.csv application_2.csv")
+        initial_csv <<- initial_csv + 1
+
+        # ~14GB
+        # system("rm output.mpf.gz application_1.csv application_2.csv")
+        system("rm output.mpf.gz")
 
         data.frame(Application_1 = c(application_1[2, "packet_finish"] -
                                      application_1[1, "packet_start"]),
