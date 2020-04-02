@@ -17,7 +17,7 @@ if [ $# -eq 0 ] ; then
 fi
 
 PROXY_URL=http://web-proxy-pa.labs.hpecorp.net:8088/
-REPO_SRC_DIR=/home/phrb/code/supersim_experiments
+REPO_SRC_DIR=/home/bruelp/supersim_experiments
 REPO_TARGET_DIR=/supersim_experiments
 IMAGE=supersim:latest
 CONTAINER=supersim-test
@@ -27,9 +27,9 @@ do
     case "$1" in
         -b|--build)
             sudo docker build \
-                 -t supersim:latest . #\
-                 # --build-arg=http_proxy=$PROXY_URL \
-                 # --build-arg=https_proxy=$PROXY_URL .
+                 -t supersim:latest \
+                 --build-arg=http_proxy=$PROXY_URL \
+                 --build-arg=https_proxy=$PROXY_URL .
             ;;
         -r|--run)
             sudo docker run -d \
